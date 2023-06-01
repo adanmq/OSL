@@ -1,0 +1,60 @@
+// This shader generates Chladni patterns. Chladni patterns are figures that form
+// when a flat plate vibrates at certain frequencies. This shader implements two formulas to
+// generate these patterns and allows to control several parameters to adjust the appearance of the patterns.
+// Chladni_Patterns.osl by Adan Martin www.3dcollective.es
+
+shader ChladniPattern(
+    point UVW = point(0, 0, 0) [[ string help = "The UVW coordinates of the point in space." ]],
+    float n = 1 [[ string help = "The first frequency parameter for the pattern formulas." ]],
+    float m = 1 [[ string help = "The second frequency parameter for the pattern formulas." ]],
+    float a = 1 [[ string help = "The first scale parameter for the pattern formulas." ]],
+    float b = 1 [[ string help = "The second scale parameter for the pattern formulas." ]],      
+    int ABS = 0 [[ string widget= "checkBox", string help = "If checked, the abs function is applied to the patterns." ]],
+    int Invert = 0 [[ string widget= "checkBox", string help = "If checked, the result of the pattern is inverted." ]],
+    int PatternType = 0 [[ string widget  = "mapper", 
+		   string label   = "Pattern Type",
+		   string options = 
+		       "Cos:0"
+		       "|Sen:1",
+		       string help = "Selects the pattern formula to use. 0 for the first formula, 1 for the second." ]],
+    float Min = 0.0 [[ string help = "The minimum value for the linear interpolation of the output." ]],
+    float Max = 1.0 [[ string help = "The maximum value for the linear interpolation of the output." ]],
+    int Normalize = 0 [[ string widget= "checkBox", string help = "If checked, the pattern and its derivatives are normalized." ]],
+    output float Out = 0 [[ string help = "The output of the shader, which is the value of the pattern at the given point." ]],
+    output vector Direction = vector(0, 0, 0)
+)
+{
+    float pattern;
+
+    // Calculate the pattern using the selected formula.
+    if (PatternType == 0)
+        pattern = a * (cos(M_PI * UVW[0] * n) * cos(M_PI * UVW[1] * m) - cos(M_PI * UVW[0] * m) * cos(M_PI * UVW[1] * n));
+    else
+        pattern = a * sin(M_PI * UVW[0] * n) * sin(M_PI * UVW[1] * m) + b * sin(M_PI * UVW[0] * m) * sin(M_PI * UVW[1] * n);
+
+    // Apply the abs function if checked.
+    if (ABS)
+        pattern = abs(pattern);
+
+    // Invert the result if checked.
+    if (Invert)
+        pattern = 1 - pattern;
+
+    // Normalize the pattern if checked.
+    if (Normalize)
+        pattern = (pattern + 1) / 2;
+
+    // Linearly interpolate the output between Min and Max.
+    Out = mix(Min, Max, pattern);
+    
+    // Calculate the derivatives of the pattern with respect to u and v
+    float dPatternX = Dx(pattern);
+    float dPatternY = Dy(pattern);
+
+    // Create a direction vector from the derivatives
+    Direction = vector(dPatternX, dPatternY, 0);
+
+    // Normalize the direction vector if checked.
+    if (Normalize)
+        Direction = normalize(Direction);
+}
