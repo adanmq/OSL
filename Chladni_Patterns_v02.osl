@@ -3,7 +3,8 @@
 // generate these patterns and allows to control several parameters to adjust the appearance of the patterns.
 // Chladni_Patterns.osl by Adan Martin www.3dcollective.es
 
-shader ChladniPattern(
+shader ChladniPattern
+(
     point UVW = point(0, 0, 0) [[ string help = "The UVW coordinates of the point in space." ]],
     float n = 1 [[ string help = "The first frequency parameter for the pattern formulas." ]],
     float m = 1 [[ string help = "The second frequency parameter for the pattern formulas." ]],
@@ -21,16 +22,17 @@ shader ChladniPattern(
     float Max = 1.0 [[ string help = "The maximum value for the linear interpolation of the output." ]],
     int Normalize = 0 [[ string widget= "checkBox", string help = "If checked, the pattern and its derivatives are normalized." ]],
     output float Out = 0 [[ string help = "The output of the shader, which is the value of the pattern at the given point." ]],
-    output vector Direction = vector(0, 0, 0)
+    output color Direction = color(0, 0, 0)
 )
+
 {
     float pattern;
 
     // Calculate the pattern using the selected formula.
     if (PatternType == 0)
-        pattern = a * (cos(M_PI * UVW[0] * n) * cos(M_PI * UVW[1] * m) - cos(M_PI * UVW[0] * m) * cos(M_PI * UVW[1] * n));
+        pattern = a * (cos(M_PI * UVW[0] * n) * cos(M_PI * UVW[1] * m)) - b * (cos(M_PI * UVW[0] * m) * cos(M_PI * UVW[1] * n));
     else
-        pattern = a * sin(M_PI * UVW[0] * n) * sin(M_PI * UVW[1] * m) + b * sin(M_PI * UVW[0] * m) * sin(M_PI * UVW[1] * n);
+        pattern = a * (sin(M_PI * UVW[0] * n) * sin(M_PI * UVW[1] * m)) + b * (sin(M_PI * UVW[0] * m) * sin(M_PI * UVW[1] * n));
 
     // Apply the abs function if checked.
     if (ABS)
